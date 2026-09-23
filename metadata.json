@@ -1,0 +1,8 @@
+{
+  "name": "A Dona de Casa",
+  "description": "App intuitivo para gestão de tarefas domésticas, controle de rotinas e repetição, com sorteador inteligente de tarefas baseado no seu tempo disponível.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

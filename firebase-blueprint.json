@@ -1,0 +1,151 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile, household association and gamification stats",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 120 },
+        "email": { "type": "string", "maxLength": 255 },
+        "photoURL": { "type": "string", "maxLength": 1000 },
+        "householdId": { "type": "string", "maxLength": 128 },
+        "points": { "type": "number" },
+        "level": { "type": "number" },
+        "completedTasksCount": { "type": "number" },
+        "totalMinutesSpent": { "type": "number" },
+        "currentStreak": { "type": "number" },
+        "lastActiveAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "displayName", "householdId", "points"]
+    },
+    "Household": {
+      "title": "Household",
+      "description": "Shared home unit for family members",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "inviteCode": { "type": "string", "maxLength": 20 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["name", "inviteCode", "createdBy"]
+    },
+    "HouseholdMember": {
+      "title": "HouseholdMember",
+      "description": "Mapping of a member inside a household",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "displayName": { "type": "string", "maxLength": 120 },
+        "photoURL": { "type": "string", "maxLength": 1000 },
+        "role": { "type": "string", "enum": ["owner", "member"] },
+        "joinedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "displayName", "role"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Domestic chore within the household",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 150 },
+        "room": { "type": "string", "maxLength": 50 },
+        "estimatedMinutes": { "type": "number" },
+        "frequencyType": { "type": "string", "enum": ["daily", "every_x_days", "weekly", "biweekly", "monthly", "as_needed"] },
+        "intervalDays": { "type": "number" },
+        "importance": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "lastCompletedAt": { "type": "string", "maxLength": 64 },
+        "completedCount": { "type": "number" },
+        "isFavorite": { "type": "boolean" },
+        "assignedToUid": { "type": "string", "maxLength": 128 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["title", "room", "estimatedMinutes", "frequencyType", "importance"]
+    },
+    "TaskLog": {
+      "title": "TaskLog",
+      "description": "Log of a completed chore with gamification points",
+      "type": "object",
+      "properties": {
+        "taskId": { "type": "string", "maxLength": 128 },
+        "taskTitle": { "type": "string", "maxLength": 150 },
+        "room": { "type": "string", "maxLength": 50 },
+        "minutesSpent": { "type": "number" },
+        "pointsEarned": { "type": "number" },
+        "completedByUid": { "type": "string", "maxLength": 128 },
+        "completedByName": { "type": "string", "maxLength": 120 },
+        "completedByPhoto": { "type": "string", "maxLength": 1000 },
+        "completedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["taskId", "taskTitle", "completedByUid", "completedByName", "pointsEarned", "completedAt"]
+    },
+    "GroceryItem": {
+      "title": "GroceryItem",
+      "description": "Shared shopping list item for the household",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 150 },
+        "category": { "type": "string", "maxLength": 50 },
+        "quantity": { "type": "number" },
+        "unit": { "type": "string", "maxLength": 20 },
+        "estimatedPrice": { "type": "number" },
+        "status": { "type": "string", "enum": ["need_to_buy", "in_cart", "already_have"] },
+        "notes": { "type": "string", "maxLength": 300 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["name", "category", "quantity", "unit", "status"]
+    },
+    "WishlistItem": {
+      "title": "WishlistItem",
+      "description": "Shared home wishlist item with priority term",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 150 },
+        "room": { "type": "string", "maxLength": 50 },
+        "estimatedCost": { "type": "number" },
+        "term": { "type": "string", "enum": ["curto", "medio", "longo"] },
+        "notes": { "type": "string", "maxLength": 500 },
+        "link": { "type": "string", "maxLength": 1000 },
+        "isPurchased": { "type": "boolean" },
+        "purchasedByUid": { "type": "string", "maxLength": 128 },
+        "purchasedAt": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["title", "estimatedCost", "term", "isPurchased"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Private and public user profile, gamification points and active household"
+    },
+    "/households/{householdId}": {
+      "schema": { "$ref": "#/entities/Household" },
+      "description": "Household unit metadata"
+    },
+    "/households/{householdId}/members/{memberId}": {
+      "schema": { "$ref": "#/entities/HouseholdMember" },
+      "description": "Members belonging to a household"
+    },
+    "/households/{householdId}/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "Tasks belonging to the household"
+    },
+    "/households/{householdId}/logs/{logId}": {
+      "schema": { "$ref": "#/entities/TaskLog" },
+      "description": "Task completion logs and gamification score events"
+    },
+    "/households/{householdId}/groceryItems/{itemId}": {
+      "schema": { "$ref": "#/entities/GroceryItem" },
+      "description": "Shared grocery items"
+    },
+    "/households/{householdId}/wishlistItems/{wishId}": {
+      "schema": { "$ref": "#/entities/WishlistItem" },
+      "description": "Shared household wishlist items"
+    }
+  }
+}

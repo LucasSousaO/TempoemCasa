@@ -1,0 +1,63 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isHouseholdMember(householdId) {
+      return isSignedIn() && exists(/databases/$(database)/documents/households/$(householdId)/members/$(request.auth.uid));
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection (gamification profile, points, ranking)
+    match /users/{userId} {
+      // Any signed-in user can read profiles to see family leaderboard
+      allow read: if isSignedIn();
+      allow create, update: if isOwner(userId);
+    }
+
+    // Households
+    match /households/{householdId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isHouseholdMember(householdId);
+
+      // Members subcollection
+      match /members/{memberId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && (memberId == request.auth.uid || isHouseholdMember(householdId));
+      }
+
+      // Tasks
+      match /tasks/{taskId} {
+        allow read, write: if isHouseholdMember(householdId);
+      }
+
+      // Activity logs & gamification points
+      match /logs/{logId} {
+        allow read, write: if isHouseholdMember(householdId);
+      }
+
+      // Grocery items
+      match /groceryItems/{itemId} {
+        allow read, write: if isHouseholdMember(householdId);
+      }
+
+      // Wishlist items
+      match /wishlistItems/{wishId} {
+        allow read, write: if isHouseholdMember(householdId);
+      }
+    }
+  }
+}
